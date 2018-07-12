@@ -4,9 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
@@ -14,7 +12,8 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-@XmlRootElement(name = "product")
+@XmlRootElement(name = "record")
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Record {
     private static final Set<Long> REFERENCE_POOL = new HashSet<>();
 

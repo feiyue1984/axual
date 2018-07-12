@@ -5,9 +5,6 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
-import org.springframework.batch.core.job.builder.FlowBuilder;
-import org.springframework.batch.core.job.flow.Flow;
-import org.springframework.batch.core.job.flow.support.SimpleFlow;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.FlatFileItemWriter;
@@ -20,14 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.task.SimpleAsyncTaskExecutor;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.oxm.xstream.XStreamMarshaller;
+import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.yuefei.axual.domain.Record;
-
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
 
 @Configuration
 @EnableBatchProcessing
@@ -75,6 +66,8 @@ public class BatchConfiguration {
 
     @Bean
     public Jaxb2Marshaller recordMarshaller() {
+        Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
+        marshaller.setClassesToBeBound(Record.class);
         return marshaller;
     }
 
