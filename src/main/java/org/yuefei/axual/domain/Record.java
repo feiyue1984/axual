@@ -15,7 +15,7 @@ import java.util.Set;
 @XmlRootElement(name = "record")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Record {
-    private static final Set<Long> REFERENCE_POOL = new HashSet<>();
+    public static final Set<Long> REFERENCE_POOL = new HashSet<>();
 
     @XmlAttribute(name = "reference")
     private long reference;
@@ -29,25 +29,4 @@ public class Record {
     private BigDecimal mutation;
     @XmlElement(name = "endBalance")
     private BigDecimal endBalance;
-    private boolean valid;
-
-    public Record(long reference, String accountNumber, String description, BigDecimal startBalance, BigDecimal
-            mutation,
-                  BigDecimal endBalance) {
-        this.reference = reference;
-        this.accountNumber = accountNumber;
-        this.description = description;
-        this.startBalance = startBalance;
-        this.mutation = mutation;
-        this.endBalance = endBalance;
-        this.valid = !REFERENCE_POOL.contains(reference) && startBalance.add(mutation).equals(endBalance);
-    }
-
-    @Override
-    public String toString() {
-        return "Record{" +
-               "reference=" + reference +
-               ", description='" + description + '\'' +
-               '}';
-    }
 }

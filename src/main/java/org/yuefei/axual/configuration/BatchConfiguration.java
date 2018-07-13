@@ -6,10 +6,11 @@ import org.springframework.batch.core.configuration.annotation.EnableBatchProces
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider;
+import org.springframework.batch.item.database.JdbcBatchItemWriter;
+import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
 import org.springframework.batch.item.file.FlatFileItemReader;
-import org.springframework.batch.item.file.FlatFileItemWriter;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
-import org.springframework.batch.item.file.builder.FlatFileItemWriterBuilder;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.xml.StaxEventItemReader;
 import org.springframework.batch.item.xml.builder.StaxEventItemReaderBuilder;
@@ -19,6 +20,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.yuefei.axual.domain.Record;
+import org.yuefei.axual.domain.RecordError;
+
+import javax.sql.DataSource;
 
 @Configuration
 @EnableBatchProcessing
@@ -44,14 +48,29 @@ public class BatchConfiguration {
                 .build();
     }
 
-    @Bean
-    public FlatFileItemWriter<Record> write() {
-        return new FlatFileItemWriterBuilder<Record>()
+/*    @Bean
+    public FlatFileItemWriter<RecordError> writer() {
+        DelimitedLineAggregator<RecordError> aggregator = new DelimitedLineAggregator<>();
+        aggregator.setDelimiter(",");
+        BeanWrapperFieldExtractor<RecordError> extractor = new BeanWrapperFieldExtractor<>();
+        extractor.setNames(new String[] {"reference", "description"});
+        aggregator.setFieldExtractor(extractor);
+        return new FlatFileItemWriterBuilder<RecordError>()
                 .name("recordItemWriter")
                 .resource(new ClassPathResource("report.csv"))
-                .lineAggregator(new RecordLineAggregator<>())
-                .shouldDeleteIfExists(true)
+                .lineAggregator(aggregator)
                 .build();
+    }*/
+
+
+
+    @Bean
+    public JdbcBatchItemWriter<RecordError> writer(DataSource dataSource) {
+        return new JdbcBatchItemWriterBuilder<RecordError>()
+        .itemSqlParameterSourceProvider(new BeanPropertyItemSqlParameterSourceProvider<>())
+        .sql("INSERT INTO record_error (reference, description) VALUES (:reference, :description)")
+        .dataSource(dataSource)
+        .build();
     }
 
     @Bean
@@ -82,21 +101,27 @@ public class BatchConfiguration {
     }
 
     @Bean
-    public Step step1(FlatFileItemWriter<Record> writer) {
+    public Step step1(JdbcBatchItemWriter<RecordError> writer) {
         return stepBuilderFactory.get("step1")
-                .<Record, Record> chunk(100)
+                .<Record, RecordError> chunk(5)
                 .reader(csvRead())
+                .processor(processor())
                 .writer(writer)
                 .build();
     }
 
     @Bean
-    public Step step2(FlatFileItemWriter<Record> writer) {
+    public Step step2(JdbcBatchItemWriter<RecordError> writer) {
         return stepBuilderFactory.get("step2")
-                .<Record, Record> chunk(100)
+                .<Record, RecordError> chunk(5)
                 .reader(xmlRead())
+                .processor(processor())
                 .writer(writer)
                 .build();
     }
 
+    @Bean
+    public RecordItemProcessor processor() {
+        return new RecordItemProcessor();
+    }
 }
