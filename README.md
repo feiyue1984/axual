@@ -1,6 +1,6 @@
 # axual
 
-Input files: records.csv & records.xml are place under axual/src/main/recources/
+Input files: records.csv & records.xml are placed under axual/src/main/recources/
 
 Detected errors are persisted in in-memory database (hsqldb) in this case. Errors are logged as well in the end.
 
